@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Screen Share Receiver</title>
+  <style>
+    body { background:#111; color:#fff; font-family:sans-serif; text-align:center; }
+    textarea { width:90%; height:100px; margin:10px; }
+    video { width:80%; margin:10px; border-radius:12px; border:2px solid #444; }
+  </style>
+</head>
+<body>
+  <h1>Screen Share Receiver</h1>
+  <textarea id="offer" placeholder="Paste offer here"></textarea><br>
+  <textarea id="answer" placeholder="Answer"></textarea><br>
+  <button id="connect">Connect</button><br>
+  <video id="remote" autoplay playsinline></video>
+
+  <script>
+    const offerBox = document.getElementById("offer");
+    const answerBox = document.getElementById("answer");
+    const connectBtn = document.getElementById("connect");
+    const remote = document.getElementById("remote");
+
+    let pc = new RTCPeerConnection();
+
+    pc.ontrack = (e) => {
+      remote.srcObject = e.streams[0];
+    };
+
+    connectBtn.onclick = async () => {
+      const offer = JSON.parse(offerBox.value);
+      await pc.setRemoteDescription(offer);
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      answerBox.value = JSON.stringify(answer);
+    };
+  </script>
+</body>
+</html>
