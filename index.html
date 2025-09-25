@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Stream</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #111; color: #fff; }
+    video { width: 80%; margin: 10px auto; border: 3px solid #444; border-radius: 12px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Live Stream</h1>
+  <video id="localVideo" autoplay muted playsinline></video>
+  <video id="remoteVideo" autoplay playsinline></video>
+  <br>
+  <button id="startBtn">Start Screen Share</button>
+
+  <script>
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    const startBtn = document.getElementById("startBtn");
+
+    let peerConnection;
+    const servers = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      localVideo.srcObject = stream;
+
+      peerConnection = new RTCPeerConnection(servers);
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+      peerConnection.ontrack = (event) => {
+        remoteVideo.srcObject = event.streams[0];
+      };
+
+      // Normally you'd need a signaling server here (WebSocket or similar)
+      // to exchange SDP offers/answers between peers. For testing, you can log it:
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      console.log("Offer SDP:", JSON.stringify(offer));
+    };
+  </script>
+</body>
+</html>
