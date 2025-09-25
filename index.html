@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Screen Share Sender</title>
+  <style>
+    body { background:#111; color:#fff; font-family:sans-serif; text-align:center; }
+    textarea { width:90%; height:100px; margin:10px; }
+    video { width:80%; margin:10px; border-radius:12px; border:2px solid #444; }
+  </style>
+</head>
+<body>
+  <h1>Screen Share Sender</h1>
+  <button id="start">Start Screen Share</button><br>
+  <textarea id="offer" placeholder="Offer"></textarea><br>
+  <textarea id="answer" placeholder="Paste answer here"></textarea><br>
+  <video id="local" autoplay muted></video>
+
+  <script>
+    const startBtn = document.getElementById("start");
+    const offerBox = document.getElementById("offer");
+    const answerBox = document.getElementById("answer");
+    const local = document.getElementById("local");
+
+    let pc = new RTCPeerConnection();
+
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      local.srcObject = stream;
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      offerBox.value = JSON.stringify(offer);
+    };
+
+    answerBox.onchange = async () => {
+      const answer = JSON.parse(answerBox.value);
+      await pc.setRemoteDescription(answer);
+    };
+  </script>
+</body>
+</html>
